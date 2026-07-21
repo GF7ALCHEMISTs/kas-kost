@@ -4,6 +4,12 @@ import { formatRupiah } from "@/lib/utils/currency";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import type { SharedExpense, SessionDue } from "@/types/database.types";
 
+// Halaman ini bergantung pada data yang bisa berubah kapan saja (sesi baru,
+// expense baru, dll), jadi jangan pernah di-cache oleh Next.js -> selalu
+// fetch data terbaru dari Supabase setiap request.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getSignedUrl(supabase: ReturnType<typeof createServiceRoleClient>, path: string | null) {
   if (!path) return null;
   const { data } = await supabase.storage.from("proofs").createSignedUrl(path, 3600);
@@ -13,11 +19,16 @@ async function getSignedUrl(supabase: ReturnType<typeof createServiceRoleClient>
 export default async function PublicSessionPage({ params }: { params: { token: string } }) {
   const supabase = createServiceRoleClient();
 
-  const { data: session } = await supabase
+  const { data: session, error: sessionError } = await supabase
     .from("shared_sessions")
     .select("*")
     .eq("share_token", params.token)
     .maybeSingle();
+
+  if (sessionError) {
+    // eslint-disable-next-line no-console
+    console.error("[public-session] query error:", sessionError.message, sessionError);
+  }
 
   if (!session) notFound();
 
