@@ -7,7 +7,7 @@ export function ShareLinkBox({ shareToken }: { shareToken: string }) {
   const url =
     typeof window !== "undefined"
       ? `${window.location.origin}/public/sesi/${shareToken}`
-      : `/public/sesi/${shareToken}`;
+      : `/sesi/${shareToken}`;
 
   return (
     <div className="rounded-xl border dark:border-gray-800 p-3 space-y-2">
