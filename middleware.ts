@@ -6,7 +6,11 @@ export async function middleware(request: NextRequest) {
 
   // Halaman publik pakai token di URL sebagai satu-satunya lapisan keamanan,
   // sengaja tidak butuh login sama sekali -> lewati semua pengecekan auth di bawah.
-  if (path.startsWith("/public")) {
+  const isPublicSession =
+    path.startsWith("/sesi") ||
+    path.startsWith("/public");
+
+  if (isPublicSession) {
     return NextResponse.next();
   }
 
