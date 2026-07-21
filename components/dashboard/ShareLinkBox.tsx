@@ -6,7 +6,7 @@ export function ShareLinkBox({ shareToken }: { shareToken: string }) {
   const [copied, setCopied] = useState(false);
   const url =
     typeof window !== "undefined"
-      ? `${window.location.origin}/public/sesi/${shareToken}`
+      ? `${window.location.origin}/sesi/${shareToken}`
       : `/sesi/${shareToken}`;
 
   return (
