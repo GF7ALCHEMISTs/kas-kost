@@ -224,7 +224,6 @@ export function ExpenseForm({
           <input
             type="file"
             accept="image/*"
-            capture="environment"
             onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
             className="w-full text-sm text-gray-700 dark:text-gray-200 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200 dark:file:bg-gray-800 dark:file:text-gray-100 dark:hover:file:bg-gray-700"
           />

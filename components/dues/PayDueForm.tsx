@@ -66,7 +66,6 @@ export function PayDueForm({ due }: { due: PeriodDue }) {
       <input
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="w-full text-sm text-gray-700 dark:text-gray-300"
       />

@@ -10,6 +10,7 @@ import { AddParticipantForm } from "@/components/dashboard/AddParticipantForm";
 import { FinalizeSessionButton } from "@/components/dashboard/FinalizeSessionButton";
 import { ShareLinkBox } from "@/components/dashboard/ShareLinkBox";
 import { AdminSessionDueForm } from "@/components/dues/AdminSessionDueForm";
+import { MemberDueStatus } from "@/components/dues/MemberDueStatus";
 import { formatRupiah } from "@/lib/utils/currency";
 
 export default async function SesiDetailPage({ params }: { params: { sessionId: string } }) {
@@ -25,7 +26,7 @@ export default async function SesiDetailPage({ params }: { params: { sessionId: 
   const session = await getSessionById(params.sessionId);
   if (!session) notFound();
 
-  const items = await getSharedExpenses(session.id);
+  const items = await getSharedExpenses(session.id, { withProof: true });
   const totalAmount = items
     .filter((i) => i.status === "active")
     .reduce((sum, i) => sum + Number(i.amount), 0);
@@ -34,7 +35,7 @@ export default async function SesiDetailPage({ params }: { params: { sessionId: 
   const isAwaitingPayment = session.status === "awaiting_payment";
   const isClosed = session.status === "closed";
 
-  const dues = !isOpen ? await getSessionDues(session.id) : [];
+  const dues = !isOpen ? await getSessionDues(session.id, { withProof: true }) : [];
   const unpaidCount = dues.filter((d) => d.status === "unpaid").length;
 
   const statusLabel = isOpen ? "Sesi masih berjalan" : isAwaitingPayment ? "Menunggu pembayaran" : "Sesi sudah ditutup";
@@ -92,9 +93,7 @@ export default async function SesiDetailPage({ params }: { params: { sessionId: 
                 {isAdmin ? (
                   <AdminSessionDueForm due={due} />
                 ) : (
-                  <p className={due.status === "paid" ? "text-xs text-green-600 dark:text-green-400" : "text-xs text-red-600 dark:text-red-400"}>
-                    {due.status === "paid" ? "Sudah bayar ✓" : "Belum bayar"}
-                  </p>
+                  <MemberDueStatus due={due} />
                 )}
               </div>
             ))}

@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Expense, ExpenseCategory, Profile } from "@/types/database.types";
 
-export async function getExpensesForPeriod(periodId: string): Promise<Expense[]> {
+export async function getExpensesForPeriod(
+  periodId: string,
+  options: { withProof?: boolean } = {}
+): Promise<Expense[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("expenses")
@@ -10,7 +13,17 @@ export async function getExpensesForPeriod(periodId: string): Promise<Expense[]>
     .order("expense_date", { ascending: false });
 
   if (error) throw error;
-  return (data as Expense[]) ?? [];
+  const expenses = (data as Expense[]) ?? [];
+
+  if (!options.withProof) return expenses;
+
+  return Promise.all(
+    expenses.map(async (exp) => {
+      if (!exp.proof_path) return { ...exp, signedProofUrl: null };
+      const { data: signed } = await supabase.storage.from("proofs").createSignedUrl(exp.proof_path, 3600);
+      return { ...exp, signedProofUrl: signed?.signedUrl ?? null };
+    })
+  );
 }
 
 export async function getExpenseCategories(): Promise<ExpenseCategory[]> {

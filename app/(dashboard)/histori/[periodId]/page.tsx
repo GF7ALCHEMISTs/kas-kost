@@ -19,8 +19,8 @@ export default async function HistoriDetailPage({ params }: { params: { periodId
 
   const [balance, dues, expenses] = await Promise.all([
     getPeriodBalance(period.id),
-    getDuesForPeriod(period.id),
-    getExpensesForPeriod(period.id),
+    getDuesForPeriod(period.id, { withProof: true }),
+    getExpensesForPeriod(period.id, { withProof: true }),
   ]);
 
   return (

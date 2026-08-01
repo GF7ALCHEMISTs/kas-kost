@@ -24,7 +24,7 @@ export default async function ParentDashboardPage() {
         totalMasuk={balance?.total_masuk ?? 0}
         totalKeluar={balance?.total_keluar ?? 0}
       />
-      <DuesStatusList dues={dues ?? []} />
+      <DuesStatusList dues={dues ?? []} showProof={false} />
 
       <div>
         <h3 className="font-semibold mb-2">Pengeluaran Bulan Ini</h3>

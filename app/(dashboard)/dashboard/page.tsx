@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const [balance, saldoAwal, dues] = await Promise.all([
     getPeriodBalance(period.id),
     getPreviousBalance(period.year, period.month),
-    getDuesForPeriod(period.id),
+    getDuesForPeriod(period.id, { withProof: true }),
   ]);
 
   return (
