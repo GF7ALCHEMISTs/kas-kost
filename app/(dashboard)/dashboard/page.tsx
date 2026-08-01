@@ -3,9 +3,18 @@ import { getCurrentOpenPeriod, getPeriodBalance, getPreviousBalance } from "@/li
 import { getDuesForPeriod } from "@/lib/queries/dues";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { DuesStatusList } from "@/components/dashboard/DuesStatusList";
+import { MarkAllPaidButton } from "@/components/dues/MarkAllPaidButton";
 
 export default async function DashboardPage() {
   const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("*").eq("id", user.id).single()
+    : { data: null };
+  const isAdmin = profile?.role === "admin";
+
   const period = await getCurrentOpenPeriod();
 
   if (!period) {
@@ -26,6 +35,7 @@ export default async function DashboardPage() {
         totalMasuk={balance?.total_masuk ?? 0}
         totalKeluar={balance?.total_keluar ?? 0}
       />
+      {isAdmin && <MarkAllPaidButton periodId={period.id} dues={dues ?? []} />}
       <DuesStatusList dues={dues ?? []} />
       <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
         Periode: {period.month}/{period.year} · Semua transaksi terlihat oleh semua penghuni.

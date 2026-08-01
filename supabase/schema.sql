@@ -115,16 +115,24 @@ select
   p.id as period_id,
   p.year,
   p.month,
-  coalesce(sum(pd.amount_due) filter (where pd.status = 'confirmed'), 0) as total_masuk,
-  coalesce(sum(e.amount) filter (where e.status = 'active'), 0) as total_keluar,
+  coalesce(pd_agg.total_masuk, 0) as total_masuk,
+  coalesce(e_agg.total_keluar, 0) as total_keluar,
   sum(
-    coalesce(sum(pd.amount_due) filter (where pd.status = 'confirmed'), 0)
-    - coalesce(sum(e.amount) filter (where e.status = 'active'), 0)
+    coalesce(pd_agg.total_masuk, 0) - coalesce(e_agg.total_keluar, 0)
   ) over (order by p.year, p.month) as saldo_akhir
 from periods p
-left join period_dues pd on pd.period_id = p.id
-left join expenses e on e.period_id = p.id
-group by p.id, p.year, p.month
+left join (
+  select period_id, sum(amount_due) as total_masuk
+  from period_dues
+  where status = 'confirmed'
+  group by period_id
+) pd_agg on pd_agg.period_id = p.id
+left join (
+  select period_id, sum(amount) as total_keluar
+  from expenses
+  where status = 'active'
+  group by period_id
+) e_agg on e_agg.period_id = p.id
 order by p.year, p.month;
 
 -- =========================================================
