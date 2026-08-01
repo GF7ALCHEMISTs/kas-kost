@@ -16,6 +16,19 @@ export async function getCurrentOpenPeriod(): Promise<Period | null> {
   return data as Period | null;
 }
 
+/** Semua periode (aktif & histori), buat dropdown pemilih bulan. */
+export async function getAllPeriods(): Promise<Period[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("periods")
+    .select("*")
+    .order("year", { ascending: false })
+    .order("month", { ascending: false });
+
+  if (error) throw error;
+  return (data as Period[]) ?? [];
+}
+
 export async function getPeriodBalance(periodId: string): Promise<PeriodBalance | null> {
   const supabase = createClient();
   const { data, error } = await supabase
