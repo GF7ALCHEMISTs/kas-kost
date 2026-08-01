@@ -161,7 +161,7 @@ order by p.year, p.month;
 -- =========================================================
 -- FUNCTION: tutup periode (atomic, hindari race condition)
 -- =========================================================
-create or replace function close_period(p_period_id uuid, p_admin_id uuid)
+create or replace function close_period(p_period_id uuid, p_admin_id uuid default null)
 returns uuid
 language plpgsql
 security definer
@@ -209,8 +209,10 @@ begin
   where is_active = true and role in ('admin','member')
   on conflict (period_id, user_id) do nothing;
 
-  insert into audit_logs (table_name, record_id, action, new_data, performed_by)
-  values ('periods', p_period_id, 'update', jsonb_build_object('status','closed'), p_admin_id);
+  if p_admin_id is not null then
+    insert into audit_logs (table_name, record_id, action, new_data, performed_by)
+    values ('periods', p_period_id, 'update', jsonb_build_object('status','closed'), p_admin_id);
+  end if;
 
   return v_new_period_id;
 end;
