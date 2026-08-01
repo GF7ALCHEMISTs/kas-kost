@@ -31,6 +31,8 @@ export interface SharedExpense {
   created_at: string;
   updated_at: string;
   paid_by_profile?: Profile;
+  // signed URL sementara buat nampilin bukti transfer (diisi query, bukan dari DB)
+  signedProofUrl?: string | null;
 }
 
 /** Tagihan rata per peserta, dibuat admin SAAT sesi dibuka ke tahap pembayaran.
@@ -47,6 +49,8 @@ export interface SessionDue {
   note: string | null;
   created_at: string;
   profiles?: Profile;
+  // signed URL sementara buat nampilin bukti transfer (diisi query, bukan dari DB)
+  signedProofUrl?: string | null;
 }
 
 export interface Profile {
@@ -84,6 +88,8 @@ export interface PeriodDue {
   created_at: string;
   // relasi (kalau di-select dengan join)
   profiles?: Profile;
+  // signed URL sementara buat nampilin bukti transfer (diisi query, bukan dari DB)
+  signedProofUrl?: string | null;
 }
 
 export interface ExpenseCategory {
@@ -108,6 +114,8 @@ export interface Expense {
   updated_at: string;
   expense_categories?: ExpenseCategory;
   paid_by_profile?: Profile;
+  // signed URL sementara buat nampilin bukti transfer (diisi query, bukan dari DB)
+  signedProofUrl?: string | null;
 }
 
 export interface PeriodBalance {

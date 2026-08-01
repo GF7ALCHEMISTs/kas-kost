@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
+import { ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { formatRupiah } from "@/lib/utils/currency";
@@ -13,6 +14,7 @@ export function AdminSessionDueForm({ due }: { due: SessionDue }) {
   const supabase = createClient();
   const [file, setFile] = useState<File | null>(null);
   const [showRecap, setShowRecap] = useState(false);
+  const [showProof, setShowProof] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,11 +71,32 @@ export function AdminSessionDueForm({ due }: { due: SessionDue }) {
 
   if (due.status === "paid") {
     return (
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-green-600 dark:text-green-400 font-medium">Sudah bayar ✓</p>
-        <button onClick={handleUndo} disabled={loading} className="text-xs text-gray-400 underline">
-          Batalkan
-        </button>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setShowProof((v) => !v)}
+            className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400 font-medium"
+          >
+            Sudah bayar ✓
+            <ChevronDown size={14} className={`transition-transform ${showProof ? "rotate-180" : ""}`} />
+          </button>
+          <button onClick={handleUndo} disabled={loading} className="text-xs text-gray-400 underline">
+            Batalkan
+          </button>
+        </div>
+        {showProof && (
+          due.signedProofUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={due.signedProofUrl}
+              alt={`Bukti transfer ${due.participant_name}`}
+              className="max-w-full rounded-xl border border-gray-200 dark:border-gray-700"
+            />
+          ) : (
+            <p className="text-xs text-gray-400 dark:text-gray-500">Bukti tidak tersedia.</p>
+          )
+        )}
       </div>
     );
   }
@@ -83,7 +106,6 @@ export function AdminSessionDueForm({ due }: { due: SessionDue }) {
       <input
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         className="w-full text-xs"
       />

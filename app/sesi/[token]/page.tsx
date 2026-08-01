@@ -48,7 +48,13 @@ export default async function PublicSessionPage({ params }: { params: { token: s
       .from("session_dues")
       .select("*")
       .eq("session_id", session.id);
-    dues = (duesData as SessionDue[]) ?? [];
+    const rawDues = (duesData as SessionDue[]) ?? [];
+    dues = await Promise.all(
+      rawDues.map(async (due) => ({
+        ...due,
+        signedProofUrl: await getSignedUrl(supabase, due.proof_path),
+      }))
+    );
   }
 
   const itemsWithSignedUrls = await Promise.all(
@@ -85,11 +91,23 @@ export default async function PublicSessionPage({ params }: { params: { token: s
             </p>
           )}
           {dues.map((due) => (
-            <div key={due.id} className="flex justify-between text-sm">
-              <span>{due.participant_name}</span>
-              <span className={due.status === "paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-                {formatRupiah(due.amount_due)} · {due.status === "paid" ? "Sudah Transfer" : "Belum"}
-              </span>
+            <div key={due.id} className="text-sm border-b last:border-0 dark:border-gray-800 pb-2 last:pb-0">
+              <div className="flex justify-between">
+                <span>{due.participant_name}</span>
+                <span className={due.status === "paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
+                  {formatRupiah(due.amount_due)} · {due.status === "paid" ? "Sudah Transfer" : "Belum"}
+                </span>
+              </div>
+              {due.status === "paid" && due.signedProofUrl && (
+                <a href={due.signedProofUrl} target="_blank" rel="noreferrer" className="block mt-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={due.signedProofUrl}
+                    alt={`Bukti transfer ${due.participant_name}`}
+                    className="rounded-lg w-full max-h-64 object-contain bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800"
+                  />
+                </a>
+              )}
             </div>
           ))}
         </div>

@@ -8,7 +8,7 @@ export default async function PengeluaranPage() {
   const period = await getCurrentOpenPeriod();
   if (!period) return <p className="text-sm text-gray-500 dark:text-gray-400">Tidak ada periode aktif.</p>;
 
-  const expenses = (await getExpensesForPeriod(period.id)) ?? [];
+  const expenses = (await getExpensesForPeriod(period.id, { withProof: true })) ?? [];
 
   // Cek expense mana saja yang pernah diedit, untuk label "✏️ Diedit"
   const supabase = createClient();
