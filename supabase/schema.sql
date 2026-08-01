@@ -107,6 +107,19 @@ create table reminders_log (
   unique (period_due_id, reminder_tier)
 );
 
+-- ---------- MANUAL BALANCE ADJUSTMENTS ----------
+-- Admin bisa tambah/kurangin saldo kas manual (koreksi, sumbangan, dsb)
+-- di luar tagihan & pengeluaran biasa.
+create table manual_adjustments (
+  id uuid primary key default uuid_generate_v4(),
+  period_id uuid not null references periods(id) on delete cascade,
+  type text not null check (type in ('tambah', 'kurang')),
+  amount numeric(12, 2) not null check (amount > 0),
+  note text not null,
+  created_by uuid not null references profiles(id),
+  created_at timestamptz not null default now()
+);
+
 -- =========================================================
 -- VIEW: saldo dihitung (computed), bukan disimpan manual
 -- =========================================================
@@ -117,8 +130,11 @@ select
   p.month,
   coalesce(pd_agg.total_masuk, 0) as total_masuk,
   coalesce(e_agg.total_keluar, 0) as total_keluar,
+  coalesce(adj_agg.total_penyesuaian, 0) as total_penyesuaian,
   sum(
-    coalesce(pd_agg.total_masuk, 0) - coalesce(e_agg.total_keluar, 0)
+    coalesce(pd_agg.total_masuk, 0)
+    - coalesce(e_agg.total_keluar, 0)
+    + coalesce(adj_agg.total_penyesuaian, 0)
   ) over (order by p.year, p.month) as saldo_akhir
 from periods p
 left join (
@@ -133,6 +149,13 @@ left join (
   where status = 'active'
   group by period_id
 ) e_agg on e_agg.period_id = p.id
+left join (
+  select
+    period_id,
+    sum(case when type = 'tambah' then amount else -amount end) as total_penyesuaian
+  from manual_adjustments
+  group by period_id
+) adj_agg on adj_agg.period_id = p.id
 order by p.year, p.month;
 
 -- =========================================================
@@ -203,6 +226,7 @@ alter table expenses enable row level security;
 alter table expense_categories enable row level security;
 alter table audit_logs enable row level security;
 alter table reminders_log enable row level security;
+alter table manual_adjustments enable row level security;
 
 create policy "read_all_authenticated_profiles" on profiles for select using (auth.role() = 'authenticated');
 create policy "read_all_authenticated_periods" on periods for select using (auth.role() = 'authenticated');
@@ -210,6 +234,20 @@ create policy "read_all_authenticated_dues" on period_dues for select using (aut
 create policy "read_all_authenticated_expenses" on expenses for select using (auth.role() = 'authenticated');
 create policy "read_all_authenticated_categories" on expense_categories for select using (auth.role() = 'authenticated');
 create policy "read_all_authenticated_audit" on audit_logs for select using (auth.role() = 'authenticated');
+
+create policy "read_all_authenticated_adjustments" on manual_adjustments
+  for select using (auth.role() = 'authenticated');
+
+create policy "admin_insert_adjustment" on manual_adjustments
+  for insert
+  with check (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+    and created_by = auth.uid()
+  );
+
+create policy "admin_delete_adjustment" on manual_adjustments
+  for delete
+  using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
 
 -- Parent TIDAK diberi policy write apa pun -> otomatis read-only
 
