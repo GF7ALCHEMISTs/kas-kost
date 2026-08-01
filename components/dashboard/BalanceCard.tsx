@@ -5,6 +5,7 @@ interface BalanceCardProps {
   saldoAkhir: number;
   totalMasuk: number;
   totalKeluar: number;
+  totalPenyesuaian?: number;
 }
 
 export function BalanceCard({
@@ -12,6 +13,7 @@ export function BalanceCard({
   saldoAkhir,
   totalMasuk,
   totalKeluar,
+  totalPenyesuaian = 0,
 }: BalanceCardProps) {
   const isMinus = saldoAkhir < 0;
 
@@ -37,7 +39,7 @@ export function BalanceCard({
       <div className="flex justify-between text-xs opacity-90 pt-3">
         <span>Carry bulan lalu: {formatRupiah(saldoAwal)}</span>
       </div>
-      <div className="grid grid-cols-2 gap-2 pt-3 text-sm">
+      <div className={`grid gap-2 pt-3 text-sm ${totalPenyesuaian !== 0 ? "grid-cols-3" : "grid-cols-2"}`}>
         <div className="bg-white/10 rounded-lg p-2">
           <p className="opacity-80 text-xs">Masuk bulan ini</p>
           <p className="font-semibold">{formatRupiah(totalMasuk)}</p>
@@ -46,6 +48,15 @@ export function BalanceCard({
           <p className="opacity-80 text-xs">Keluar bulan ini</p>
           <p className="font-semibold">{formatRupiah(totalKeluar)}</p>
         </div>
+        {totalPenyesuaian !== 0 && (
+          <div className="bg-white/10 rounded-lg p-2">
+            <p className="opacity-80 text-xs">Penyesuaian</p>
+            <p className="font-semibold">
+              {totalPenyesuaian > 0 ? "+" : ""}
+              {formatRupiah(totalPenyesuaian)}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

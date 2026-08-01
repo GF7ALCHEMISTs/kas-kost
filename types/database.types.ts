@@ -124,7 +124,19 @@ export interface PeriodBalance {
   month: number;
   total_masuk: number;
   total_keluar: number;
+  total_penyesuaian: number;
   saldo_akhir: number;
+}
+
+export interface ManualAdjustment {
+  id: string;
+  period_id: string;
+  type: "tambah" | "kurang";
+  amount: number;
+  note: string;
+  created_by: string;
+  created_at: string;
+  profiles?: Profile;
 }
 
 export interface AuditLog {

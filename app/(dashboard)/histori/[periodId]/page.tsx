@@ -3,8 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { getDuesForPeriod } from "@/lib/queries/dues";
 import { getExpensesForPeriod } from "@/lib/queries/expenses";
 import { getPeriodBalance } from "@/lib/queries/periods";
+import { getAdjustmentsForPeriod } from "@/lib/queries/adjustments";
 import { DuesStatusList } from "@/components/dashboard/DuesStatusList";
 import { ExpenseList } from "@/components/expenses/ExpenseList";
+import { AdjustmentList } from "@/components/dues/AdjustmentList";
 import { formatRupiah } from "@/lib/utils/currency";
 
 export default async function HistoriDetailPage({ params }: { params: { periodId: string } }) {
@@ -17,10 +19,11 @@ export default async function HistoriDetailPage({ params }: { params: { periodId
 
   if (!period) notFound();
 
-  const [balance, dues, expenses] = await Promise.all([
+  const [balance, dues, expenses, adjustments] = await Promise.all([
     getPeriodBalance(period.id),
     getDuesForPeriod(period.id, { withProof: true }),
     getExpensesForPeriod(period.id, { withProof: true }),
+    getAdjustmentsForPeriod(period.id),
   ]);
 
   return (
@@ -29,6 +32,7 @@ export default async function HistoriDetailPage({ params }: { params: { periodId
         <p className="text-sm text-gray-500 dark:text-gray-400">Saldo Akhir {period.month}/{period.year}</p>
         <p className="text-2xl font-bold">{formatRupiah(balance?.saldo_akhir ?? 0)}</p>
       </div>
+      <AdjustmentList adjustments={adjustments ?? []} isAdmin={false} />
       <DuesStatusList dues={dues ?? []} />
       <div>
         <h3 className="font-semibold mb-2">Semua Pengeluaran</h3>
