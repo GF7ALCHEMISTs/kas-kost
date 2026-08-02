@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentOpenPeriod, getPeriodBalance } from "@/lib/queries/periods";
 import { formatRupiah } from "@/lib/utils/currency";
+import { AutoCloseCountdown } from "@/components/dashboard/AutoCloseCountdown";
 import { ClosePeriodButton } from "@/components/dashboard/ClosePeriodButton";
 import { EditDueAmountForm } from "@/components/dashboard/EditDueAmountForm";
 
@@ -34,7 +35,10 @@ export default async function TutupPeriodePage() {
         <p className="text-2xl font-bold">{formatRupiah(balance?.saldo_akhir ?? 0)}</p>
       </div>
       <EditDueAmountForm periodId={period.id} currentAmount={period.default_due_amount} />
-      <ClosePeriodButton periodId={period.id} adminId={user.id} />
+      <AutoCloseCountdown />
+      <div className="text-center">
+        <ClosePeriodButton periodId={period.id} adminId={user.id} minimal />
+      </div>
     </div>
   );
 }
