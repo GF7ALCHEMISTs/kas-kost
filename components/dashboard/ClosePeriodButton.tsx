@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
-export function ClosePeriodButton({ periodId, adminId }: { periodId: string; adminId: string }) {
+export function ClosePeriodButton({
+  periodId,
+  adminId,
+  minimal = false,
+}: {
+  periodId: string;
+  adminId: string;
+  minimal?: boolean;
+}) {
   const router = useRouter();
   const supabase = createClient();
   const [open, setOpen] = useState(false);
@@ -34,12 +42,21 @@ export function ClosePeriodButton({ periodId, adminId }: { periodId: string; adm
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full py-2.5 rounded-lg bg-red-600 text-white font-medium"
-      >
-        Tutup Periode Ini
-      </button>
+      {minimal ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="text-xs text-gray-400 dark:text-gray-500 underline"
+        >
+          Tutup manual sekarang (kalau auto-tutup gagal)
+        </button>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full py-2.5 rounded-lg bg-red-600 text-white font-medium"
+        >
+          Tutup Periode Ini
+        </button>
+      )}
       {error && <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>}
       <ConfirmModal
         open={open}
@@ -50,7 +67,8 @@ export function ClosePeriodButton({ periodId, adminId }: { periodId: string; adm
       >
         <p>
           Ini akan menutup bulan berjalan dan membuka periode baru dengan saldo awal = saldo akhir
-          bulan ini. Tindakan ini tidak bisa dibatalkan.
+          bulan ini. Tindakan ini tidak bisa dibatalkan. Sistem sudah otomatis menutup periode
+          setiap tanggal 1, jadi ini cuma perlu dipakai kalau auto-tutup gagal.
         </p>
       </ConfirmModal>
     </>
